@@ -134,8 +134,11 @@
             <div class="col-lg-4">
                 {{-- Cover Image --}}
                 <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
-                    <img src="{{ $article->cover ? asset('storage/' . $article->cover) : 'https://unnes.ac.id/fh/wp-content/uploads/sites/13/2025/10/cover_issue_440_en.png' }}"
-                        class="w-100">
+                    <img src="{{ $article->cover_image && Storage::disk('public')->exists($article->cover_image)
+                        ? asset('storage/' . $article->cover_image)
+                        : asset('assets/img/default-cover.jpg') }}"
+                        class="w-100 shadow-sm rounded" style="object-fit: cover; height: 400px;"
+                        alt="Cover {{ $article->title }}">
                 </div>
 
                 {{-- Download Card --}}
