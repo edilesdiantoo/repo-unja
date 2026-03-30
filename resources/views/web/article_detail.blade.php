@@ -148,19 +148,24 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="list-group list-group-flush">
+
                             <div
                                 class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
                                 <div class="text-truncate me-2">
                                     <i class="far fa-file-pdf text-danger me-2 fa-lg"></i>
                                     <span class="small fw-bold">Full Text.pdf</span>
                                 </div>
+
                                 @auth
-                                    {{-- Arahkan ke route controller, bukan ke asset langsung --}}
-                                    <a href="{{ route('web.article.download', $article->id) }}"
-                                        class="btn btn-sm btn-unja-primary rounded-pill px-3"><i class="bi bi-eye"></i>
-                                        Lihat</a>
+                                    {{-- Tambahkan target="_blank" agar PDF terbuka di tab baru --}}
+                                    <a href="{{ route('web.article.view', $article->id) }}" target="_blank"
+                                        class="btn btn-sm btn-unja-primary rounded-pill px-3">
+                                        <i class="fas fa-eye me-1"></i> Lihat
+                                    </a>
                                 @else
-                                    <span class="badge bg-secondary rounded-pill">Terkunci</span>
+                                    <a href="{{ route('login') }}" class="btn btn-sm btn-secondary rounded-pill px-3">
+                                        <i class="fas fa-lock me-1"></i> Login untuk Lihat
+                                    </a>
                                 @endauth
                             </div>
                         </div>

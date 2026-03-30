@@ -20,8 +20,8 @@ Route::get('/browse', [HomeController::class, 'browse'])->name('web.browse');
 Route::get('/panduan', [HomeController::class, 'policy'])->name('web.policy');
 // Route untuk detail karya ilmiah
 Route::get('/article/{id}', [App\Http\Controllers\Web\HomeController::class, 'show'])->name('web.article.show');
-Route::get('/article/download/{id}', [App\Http\Controllers\Web\HomeController::class, 'download'])->name('web.article.download')->middleware('auth');
-
+// Route::get('/article/download/{id}', [App\Http\Controllers\Web\HomeController::class, 'download'])->name('web.article.download')->middleware('auth');
+Route::get('/article/view/{id}', [HomeController::class, 'viewArticle'])->name('web.article.view');
 // auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);

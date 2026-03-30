@@ -87,4 +87,20 @@ class HomeController extends Controller
     {
         return view('web.policy');
     }
+
+    public function viewArticle($id)
+    {
+        $article = \App\Models\Article::findOrFail($id);
+
+        // Tetap hitung sebagai 'downloads' atau 'views' sesuai keinginan kamu
+        $article->increment('downloads');
+
+        $path = storage_path('app/public/'.$article->pdf_file);
+
+        // Pakai response()->file() agar terbuka di browser (PDF Viewer)
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$article->title.'.pdf"',
+        ]);
+    }
 }
