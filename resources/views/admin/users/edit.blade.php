@@ -14,8 +14,7 @@
             <div class="row">
                 <div class="col-12">
                     {{-- Gunakan method PUT untuk update --}}
-                    <form method="POST" action="{{ route('admin.users.update', $user->id) }}">
-                        @csrf
+                    <form id="editUserForm" method="POST" action="{{ route('admin.users.update', $user->id) }}"> @csrf
                         @method('PUT')
 
                         <div class="mb-3">
@@ -60,11 +59,52 @@
                             <small class="text-muted">Kosongkan jika tidak ingin mengubah password.</small>
                         </div>
 
-                        <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
-                        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary px-4">Kembali</a>
+                        <div class="mt-4">
+                            {{-- Ubah ke type="button" --}}
+                            <button type="button" onclick="confirmUpdateUser()" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-1"></i> Simpan Perubahan
+                            </button>
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary px-4">Kembali</a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+<script>
+    function confirmUpdateUser() {
+        const form = document.getElementById('editUserForm');
+
+        // Validasi HTML5 dasar (cek required)
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Update Data Pengguna?',
+            text: "Pastikan perubahan role atau identitas sudah benar.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0d6efd', // Warna biru Primary
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Perbarui',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading
+                Swal.fire({
+                    title: 'Sedang Memproses...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+                form.submit();
+            }
+        });
+    }
+</script>
