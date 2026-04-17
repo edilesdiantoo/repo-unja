@@ -40,11 +40,15 @@
                                     {{ request('kekhususan') == 'Hukum Pidana' ? 'selected' : '' }}>Hukum Pidana</option>
                                 <option value="Hukum Perdata"
                                     {{ request('kekhususan') == 'Hukum Perdata' ? 'selected' : '' }}>Hukum Perdata</option>
-                                <option value="Hukum Bisnis"
-                                    {{ request('kekhususan') == 'Hukum Bisnis' ? 'selected' : '' }}>Hukum Bisnis</option>
                                 <option value="Hukum Tatanegara"
                                     {{ request('kekhususan') == 'Hukum Tatanegara' ? 'selected' : '' }}>Hukum Tatanegara
                                 </option>
+                                <option value="Hukum Administrasi Negara"
+                                    {{ request('kekhususan') == 'Hukum Administrasi Negara' ? 'selected' : '' }}>Hukum
+                                    Administrasi Negara</option>
+                                <option value="Hukum Internasional"
+                                    {{ request('kekhususan') == 'Hukum Internasional' ? 'selected' : '' }}>Hukum
+                                    Internasional</option>
                             </select>
                         </div>
 

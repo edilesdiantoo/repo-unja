@@ -13,9 +13,9 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         // Ambil semua data (Query Builder dasar)
-        $query = \App\Models\Article::query();
+        $query = Article::query();
 
-        // Filter Rentang Waktu
+        // 1. Filter Rentang Waktu
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('created_at', [
                 $request->start_date.' 00:00:00',
@@ -23,14 +23,19 @@ class ReportController extends Controller
             ]);
         }
 
-        // Filter Jenis Dokumen (Sesuai Navicat: document_type)
+        // 2. Filter Jenis Dokumen (Sesuai Navicat: document_type)
         if ($request->filled('kategori') && $request->kategori != 'all') {
             $query->where('document_type', $request->kategori);
         }
 
-        // Filter Program Studi (Sesuai Navicat: study_program)
+        // 3. Filter Program Studi (Sesuai Navicat: study_program)
         if ($request->filled('kekhususan') && $request->kekhususan != 'all') {
             $query->where('study_program', $request->kekhususan);
+        }
+
+        // 4. Filter Status (Tambahkan ini agar tabel sinkron dengan PDF)
+        if ($request->filled('status') && $request->status != 'all') {
+            $query->where('status', $request->status);
         }
 
         // Ambil hasil dengan pagination (10 data per halaman)
@@ -44,7 +49,7 @@ class ReportController extends Controller
     {
         $query = Article::query();
 
-        // Filter yang sama dengan index
+        // Filter yang sama persis dengan fungsi index
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('created_at', [
                 $request->start_date.' 00:00:00',
@@ -64,19 +69,25 @@ class ReportController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Ambil data beserta relasi user pengunggah
         $results = $query->with('user')->latest()->get();
 
+        // Variabel untuk informasi filter di Header PDF
         $filter = [
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'kategori' => $request->kategori,
-            'kekhususan' => $request->kekhususan,
-            'status' => $request->status,
+            'kategori' => $request->kategori ?? 'all',
+            'kekhususan' => $request->kekhususan ?? 'all',
+            'status' => $request->status ?? 'all',
         ];
 
+        // Generate PDF dengan format Landscape
         $pdf = Pdf::loadView('admin.report.result_pdf', compact('results', 'filter'))
             ->setPaper('a4', 'landscape');
 
-        return $pdf->stream('Laporan_Repositori_'.now()->format('Ymd').'.pdf');
+        // Nama file unik berdasarkan waktu cetak
+        $fileName = 'Laporan_Repositori_'.now()->format('Ymd_His').'.pdf';
+
+        return $pdf->stream($fileName);
     }
 }
