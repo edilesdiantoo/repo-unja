@@ -31,12 +31,12 @@
                                             <i class="fa-regular fa-file-pdf fa-2x text-danger me-3"></i>
                                             <div class="flex-grow-1">
                                                 <div class="small text-muted">Nama File:</div>
-                                                <a href="{{ asset('storage/' . $article->file_utama) }}" target="_blank"
+                                                <a href="{{ asset('storage/' . $article->pdf_file) }}" target="_blank"
                                                     class="fw-bold text-decoration-none">
-                                                    {{ basename($article->file_utama) }}
+                                                    {{ basename($article->pdf_file) }}
                                                 </a>
                                             </div>
-                                            <a href="{{ asset('storage/' . $article->file_utama) }}" target="_blank"
+                                            <a href="{{ asset('storage/' . $article->pdf_file) }}" target="_blank"
                                                 class="btn btn-sm btn-outline-danger">
                                                 <i class="fas fa-external-link-alt"></i> Buka File
                                             </a>
@@ -50,12 +50,12 @@
                                             <i class="fa-regular fa-image fa-2x text-primary me-3"></i>
                                             <div class="flex-grow-1">
                                                 <div class="small text-muted">Nama File:</div>
-                                                <a href="{{ asset('storage/' . $article->file_sampul) }}" target="_blank"
+                                                <a href="{{ asset('storage/' . $article->cover_image) }}" target="_blank"
                                                     class="fw-bold text-decoration-none">
-                                                    {{ basename($article->file_sampul) }}
+                                                    {{ basename($article->cover_image) }}
                                                 </a>
                                             </div>
-                                            <a href="{{ asset('storage/' . $article->file_sampul) }}" target="_blank"
+                                            <a href="{{ asset('storage/' . $article->cover_image) }}" target="_blank"
                                                 class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </a>

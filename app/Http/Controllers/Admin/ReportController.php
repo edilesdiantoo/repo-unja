@@ -9,9 +9,33 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.report.index');
+        $query = \App\Models\Article::query();
+
+        // Filter Tanggal
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+        }
+
+        // Filter Kategori (document_type)
+        if ($request->kategori && $request->kategori != 'all') {
+            $query->where('document_type', $request->kategori);
+        }
+
+        // Filter Status
+        if ($request->status && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter Kekhususan (study_program)
+        if ($request->kekhususan && $request->kekhususan != 'all') {
+            $query->where('study_program', $request->kekhususan);
+        }
+
+        $articles = $query->latest()->paginate(10)->withQueryString();
+
+        return view('admin.report.index', compact('articles'));
     }
 
     public function generate(Request $request)

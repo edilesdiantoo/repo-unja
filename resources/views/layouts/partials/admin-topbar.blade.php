@@ -74,8 +74,7 @@
                     <hr class="dropdown-divider">
                 </li>
                 <li>
-                    <a class="dropdown-item text-danger" href="#"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="dropdown-item text-danger" href="#" onclick="confirmLogout(event);">
                         <i class="fa fa-power-off me-2"></i> Keluar
                     </a>
                 </li>
@@ -83,3 +82,35 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    function confirmLogout(event) {
+        event.preventDefault(); // Stop proses logout otomatis
+
+        Swal.fire({
+            title: 'Konfirmasi Keluar',
+            text: "Apakah Anda yakin ingin mengakhiri sesi ini?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#8B0000', // Maroon UNJA
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Animasi loading biar keren
+                Swal.fire({
+                    title: 'Sedang memproses...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+                // Jalankan form logout
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>

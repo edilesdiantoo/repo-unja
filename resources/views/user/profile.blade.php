@@ -14,7 +14,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('user.profile.update') }}">
+                <form id="userProfileForm" method="POST" action="{{ route('user.profile.update') }}">
                     @csrf
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -49,8 +49,12 @@
                             <small class="text-muted">Minimal 6 karakter.</small>
                         </div>
 
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-danger px-4 shadow-sm">Simpan Perubahan</button>
+                        <div class="col-12 mt-4">
+                            {{-- Ubah type="submit" menjadi type="button" --}}
+                            <button type="button" onclick="confirmUserProfileUpdate()"
+                                class="btn btn-danger px-4 shadow-sm">
+                                <i class="fas fa-save me-1"></i> Simpan Perubahan
+                            </button>
                             <a href="{{ route('user.dashboard') }}" class="btn btn-secondary px-4 shadow-sm">Kembali</a>
                         </div>
                     </div>
@@ -59,3 +63,40 @@
         </div>
     </div>
 @endsection
+
+<script>
+    function confirmUserProfileUpdate() {
+        const form = document.getElementById('userProfileForm');
+
+        // Cek apakah inputan yang wajib sudah diisi semua
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Simpan Perubahan?',
+            text: "Pastikan data profil Anda sudah benar sebelum disimpan.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#8B0000', // Maroon UNJA
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Simpan',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Munculkan loading agar user tahu proses sedang berjalan
+                Swal.fire({
+                    title: 'Memperbarui Profil...',
+                    html: 'Mohon tunggu sebentar.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+                form.submit();
+            }
+        });
+    }
+</script>

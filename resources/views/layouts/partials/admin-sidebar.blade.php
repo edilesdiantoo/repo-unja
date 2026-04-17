@@ -46,14 +46,44 @@
 
         <hr class="border-light opacity-25">
 
-        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-            class="nav-link">
+        <a href="#" onclick="confirmLogout(event)" class="nav-link">
             <i class="fa fa-right-from-bracket me-2"></i> Logout
         </a>
 
-        {{-- Form tersembunyi wajib ada satu saja di layouts/admin.blade.php --}}
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        {{-- Pastikan form logout kamu sudah ada di bawahnya --}}
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
             @csrf
         </form>
     </div>
 </div>
+
+<script>
+    function confirmLogout(event) {
+        event.preventDefault(); // Mencegah link pindah halaman langsung
+
+        Swal.fire({
+            title: 'Ingin Keluar?',
+            text: "Anda harus login kembali untuk mengakses halaman ini.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#8B0000', // Warna Maroon UNJA
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading sebentar agar transisi smooth
+                Swal.fire({
+                    title: 'Sedang Keluar...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+                // Submit form logout
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>

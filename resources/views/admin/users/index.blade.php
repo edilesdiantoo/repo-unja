@@ -23,7 +23,7 @@
                                     <th>Identitas (NIM/NIDN)</th>
                                     <th>Nama Lengkap</th>
                                     <th>Email</th>
-                                    <th>Status</th>
+                                    {{-- <th>Status</th> --}}
                                     <th>Terakhir Login</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
@@ -63,7 +63,7 @@
                                             <div class="fw-bold text-dark">{{ $user->name }}</div>
                                         </td>
                                         <td>{{ $user->email }}</td>
-                                        <td>
+                                        {{-- <td>
                                             <a href="#"
                                                 class="badge {{ $user->is_active ? 'bg-primary' : 'bg-secondary' }} text-white text-decoration-none btn-status"
                                                 data-bs-toggle="modal" data-bs-target="#statusModal"
@@ -71,7 +71,7 @@
                                                 data-status="{{ $user->is_active }}">
                                                 {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                             </a>
-                                        </td>
+                                        </td> --}}
                                         <td class="small">
                                             {{ $user->last_login_at ? $user->last_login_at->format('d M Y, H:i') . ' WIB' : 'Belum Login' }}
                                         </td>
@@ -84,14 +84,16 @@
                                                 </a>
 
                                                 {{-- Form Hapus --}}
-                                                {{-- <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?')">
+                                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
+                                                    id="delete-form-{{ $user->id }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-light border text-danger">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-light border text-danger btn-delete"
+                                                        data-id="{{ $user->id }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
-                                                </form> --}}
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -155,6 +157,40 @@
                 $('#modalSubText').text('Setelah diaktifkan, pengguna ini dapat kembali login ke sistem.');
                 $('#btnSubmitStatus').addClass('btn-success').removeClass('btn-danger').text('Ya, Aktifkan Akun');
             }
+        });
+    </script>
+
+    <script>
+        $(document).on('click', '.btn-delete', function(e) {
+            e.preventDefault();
+
+            let userId = $(this).data('id');
+            let form = $('#delete-form-' + userId);
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data pengguna ini akan dihapus permanen dan tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8B0000', // Warna Maroon UNJA
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading sebentar sebelum submit
+                    Swal.fire({
+                        title: 'Mohon Tunggu',
+                        html: 'Sedang menghapus data...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        }
+                    });
+                    form.submit();
+                }
+            });
         });
     </script>
 @endpush

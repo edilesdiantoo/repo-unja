@@ -88,13 +88,12 @@
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="#"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="dropdown-item" href="#" onclick="confirmLogout(event)">
                         <i class="text-muted fa-solid fa-right-from-bracket me-2"></i>
                         Logout
                     </a>
 
-                    {{-- Form Logout Tersembunyi --}}
+                    {{-- Form Logout Tersembunyi (Cukup satu saja di halaman ini) --}}
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf
                     </form>
@@ -103,3 +102,34 @@
         </div>
     </div>
 </div>
+
+<script>
+    function confirmLogout(event) {
+        event.preventDefault(); // Menghentikan form agar tidak submit otomatis
+
+        Swal.fire({
+            title: 'Yakin ingin keluar?',
+            text: "Sesi Anda akan berakhir dan Anda harus login kembali.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#8B0000', // Warna Maroon khas UNJA
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Logout!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Beri efek loading biar lebih mantap
+                Swal.fire({
+                    title: 'Sedang memproses...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+                // Eksekusi form logout
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>

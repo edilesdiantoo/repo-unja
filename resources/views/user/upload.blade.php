@@ -22,8 +22,8 @@
                         <div class="mb-3">
                             <label for="pdf_file" class="form-label fw-bold">Dokumen (PDF)</label>
                             <div class="input-group">
-                                <input type="file" name="pdf_file"
-                                    class="form-control @error('pdf_file') is-invalid @enderror" id="pdf_file">
+                                <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf"
+                                    class="form-control @error('pdf_file') is-invalid @enderror">
                             </div>
                             @error('pdf_file')
                                 <small class="text-danger">{{ $message }}</small>
@@ -218,6 +218,47 @@
             } else {
                 fields.classList.add('d-none');
                 fields.querySelectorAll('input').forEach(i => i.value = '');
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfInput = document.getElementById('pdf_file');
+
+            if (pdfInput) {
+                pdfInput.onchange = function() {
+                    const file = this.files[0];
+
+                    if (file) {
+                        // 1. Validasi Format (Harus PDF)
+                        if (file.type !== "application/pdf") {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Format Salah',
+                                text: 'Hanya file format PDF yang diperbolehkan!',
+                                confirmButtonColor: '#8B0000',
+                            });
+                            this.value = "";
+                            return;
+                        }
+
+                        // 2. Validasi Ukuran (Kembali ke 20MB)
+                        const maxSizeInBytes = 20 * 1024 * 1024;
+                        if (file.size > maxSizeInBytes) {
+                            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'File Terlalu Besar',
+                                text: 'Ukuran file Anda (' + fileSizeMB +
+                                    ' MB) melebihi batas maksimal 20 MB.',
+                                confirmButtonColor: '#8B0000',
+                            });
+                            this.value = "";
+                            return;
+                        }
+                    }
+                };
             }
         });
     </script>
