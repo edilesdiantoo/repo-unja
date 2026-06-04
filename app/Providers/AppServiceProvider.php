@@ -2,44 +2,71 @@
 
 namespace App\Providers;
 
-// Tambahkan ini
-// Tambahkan ini
-use Illuminate\Support\ServiceProvider; // Tambahkan ini
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    // File: app/Providers/AppServiceProvider.php
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
 
-    // File: app/Providers/AppServiceProvider.php
-
+    /**
+     * Bootstrap any application services.
+     */
     public function boot()
     {
-        // Gunakan nama file sesuai sidebar VS Code Anda: admin-topbar (pakai strip)
-        view()->composer(['layouts.partials.admin-topbar', 'layouts.partials.user-topbar'], function ($view) {
+        // Menyebarkan data ke topbar admin dan user secara global
+        View::composer(['layouts.partials.admin-topbar', 'layouts.partials.user-topbar'], function ($view) {
 
-            // Default nilai agar tidak error Undefined
+            // Default nilai agar tidak error Undefined di blade
             $notifications = collect();
             $unreadCount = 0;
 
             if (auth()->check()) {
                 $user = auth()->user();
 
-                // Jika yang login ADMIN atau SUPERADMIN
+                // =========================================================================
+                // 1. JIKA YANG LOGIN ADMIN ATAU SUPERADMIN (SOLUSI UTAMA EDI)
+                // =========================================================================
                 if ($user->role == 'admin' || $user->role == 'superadmin') {
-                    // Ambil semua notifikasi yang statusnya 'Pending' (antrean baru)
-                    $notifications = \App\Models\Notification::where('status', 'Pending')
-                        ->latest()->limit(5)->get();
-                    $unreadCount = \App\Models\Notification::where('status', 'Pending')
-                        ->where('is_read', false)->count();
-                } else {
-                    // Jika USER biasa, hanya ambil milik sendiri
+
+                    // AMANKAN TARGET: Admin HANYA melihat notifikasi yang ditujukan untuk ID dirinya sendiri
+                    // dan murni berstatus 'Pending' (pemberitahuan ajuan/revisi baru dari mahasiswa)
                     $notifications = \App\Models\Notification::where('user_id', $user->id)
-                        ->latest()->limit(5)->get();
+                        ->where('status', 'Pending')
+                        ->where('is_read', false)
+                        ->latest()
+                        ->limit(5)
+                        ->get();
+
                     $unreadCount = \App\Models\Notification::where('user_id', $user->id)
-                        ->where('is_read', false)->count();
+                        ->where('status', 'Pending')
+                        ->where('is_read', false)
+                        ->count();
+
+                    // =========================================================================
+                    // 2. JIKA YANG LOGIN USER / MAHASISWA BIASA
+                    // =========================================================================
+                } else {
+                    // Mahasiswa hanya mengambil notifikasi keputusan yang tertuju untuk ID dirinya sendiri
+                    $notifications = \App\Models\Notification::where('user_id', $user->id)
+                        ->where('is_read', false)
+                        ->latest()
+                        ->limit(5)
+                        ->get();
+
+                    $unreadCount = \App\Models\Notification::where('user_id', $user->id)
+                        ->where('is_read', false)
+                        ->count();
                 }
             }
 
+            // Kirim data ke file topbar html
             $view->with([
                 'notifications' => $notifications,
                 'unreadCount' => $unreadCount,

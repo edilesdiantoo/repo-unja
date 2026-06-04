@@ -20,12 +20,13 @@ class DashboardController extends Controller
         ];
 
         // Data untuk Chart Donut (Menghitung semua status per kategori)
+        // PERBAIKAN: Key 'Laporan' disamakan menjadi 'Laporan Magang' agar seragam dengan data series
         $chartData = [
             'Skripsi' => \App\Models\Article::where('document_type', 'Skripsi')->count(),
             'Tesis' => \App\Models\Article::where('document_type', 'Tesis')->count(),
             'Disertasi' => \App\Models\Article::where('document_type', 'Disertasi')->count(),
             'Jurnal' => \App\Models\Article::where('document_type', 'Jurnal')->count(),
-            'Laporan' => \App\Models\Article::where('document_type', 'Laporan Magang')->count(),
+            'Laporan Magang' => \App\Models\Article::where('document_type', 'Laporan Magang')->count(),
         ];
 
         // Reset dan Buat Statistik Harian (7 Hari Terakhir) untuk Area Chart
@@ -52,16 +53,55 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact('stats', 'chartData', 'aktivitas', 'days', 'dataSeries'));
     }
 
+    /**
+     * SINKRONISASI BARU: Redirect Pintar Berdasarkan Status Notifikasi
+     */
     public function markAsRead($id)
     {
         $notification = \App\Models\Notification::findOrFail($id);
 
-        // Tandai sudah dibaca
+        // 1. Ubah status data menjadi terbaca agar badge angka merah berkurang secara realtime
         $notification->update(['is_read' => true]);
 
-        // Jika ini notifikasi dokumen pending, arahkan admin langsung ke halaman verifikasi
-        if ($notification->status == 'Pending') {
+        $statusNotif = strtolower($notification->status);
+        $message = $notification->message;
+        $article = null;
+
+        // 2. LOGIKA PINTAR BREAKDOWN STRING JUDUL (Membaca teks di dalam tanda kutip tunggal dari pesan notifikasi)
+        // Contoh pesan: User Edi Lesdianto mengajukan verifikasi karya ilmiah baru: 'Strategi Penanganan...'
+        if (preg_match("/'([^']+)'/", $message, $matches)) {
+            $extractedTitle = $matches[1];
+
+            // Cari artikel di database yang judulnya mirip/mengandung potongan string tersebut
+            $article = \App\Models\Article::where('title', 'LIKE', '%'.$extractedTitle.'%')
+                ->when($statusNotif == 'pending', function ($query) {
+                    return $query->where('status', 'pending');
+                })
+                ->when($statusNotif == 'verified', function ($query) {
+                    return $query->where('status', 'verified');
+                })
+                ->latest()
+                ->first();
+        }
+
+        // 3. EKSEKUSI REDIRECT LANGSUNG KE HALAMAN FORM DETAIL (Sesuai Gambar 2)
+        if ($article) {
+            // Jika status pending, langsung tembak masuk ke halaman formulir Verifikasi Berkas
+            if ($statusNotif == 'pending') {
+                return redirect()->route('admin.repository.verify', $article->id);
+            }
+
+            // Jika status verified, langsung tembak masuk ke halaman formulir Konfirmasi Publikasi Final
+            if ($statusNotif == 'verified') {
+                return redirect()->route('admin.repository.detailPublikasi', $article->id);
+            }
+        }
+
+        // Fallback: Jika judul unik tidak terbaca di string, oper ke halaman list tabel utamanya
+        if ($statusNotif == 'pending') {
             return redirect()->route('admin.repository.pending');
+        } elseif ($statusNotif == 'verified') {
+            return redirect()->route('admin.repository.publikasi');
         }
 
         return redirect()->back()->with('success', 'Notifikasi telah dibaca.');
@@ -125,7 +165,6 @@ class DashboardController extends Controller
 
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
-            // Ganti nomor_identitas menjadi identity_number sesuai Navicat
             'identity_number' => 'required|string|max:50|unique:users,identity_number,'.$user->id,
             'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|min:6',
@@ -133,7 +172,7 @@ class DashboardController extends Controller
 
         // Proses Simpan ke Database
         $user->name = $request->nama_lengkap;
-        $user->identity_number = $request->identity_number; // Sesuaikan di sini juga
+        $user->identity_number = $request->identity_number;
         $user->email = $request->email;
 
         if ($request->filled('password')) {

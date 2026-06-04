@@ -22,14 +22,22 @@
 
         <div class="collapse {{ request()->is('admin/repository*') ? 'show' : '' }}" id="repositorySubmenu">
             <div class="bg-transparent p-2 rounded" style="margin-left: 15px;">
+
                 <a href="{{ route('admin.repository.pending') }}"
                     class="d-block py-2 text-white small {{ request()->routeIs('admin.repository.pending') ? 'fw-bold active' : '' }}">
                     <i class="fa-regular fa-circle me-2" style="font-size: 0.6rem;"></i> Menunggu Validasi
                 </a>
+
+                <a href="{{ route('admin.repository.publikasi') }}"
+                    class="d-block py-2 text-white small {{ request()->routeIs('admin.repository.publikasi') || request()->routeIs('admin.repository.detailPublikasi') ? 'fw-bold active' : '' }}">
+                    <i class="fa-regular fa-circle me-2" style="font-size: 0.6rem;"></i> Publikasikan Karya Ilmiah
+                </a>
+
                 <a href="{{ route('admin.repository.index') }}"
                     class="d-block py-2 text-white small {{ request()->routeIs('admin.repository.index') ? 'fw-bold active' : '' }}">
                     <i class="fa-regular fa-circle me-2" style="font-size: 0.6rem;"></i> Data Koleksi
                 </a>
+
             </div>
         </div>
 

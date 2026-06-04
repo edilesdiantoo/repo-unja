@@ -32,37 +32,69 @@ Route::prefix('user')->name('user.')->group(function () {
     // Nama route: user.dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Nama route: user.article.create
-    Route::get('/upload', [ArticleController::class, 'create'])->name('article.create');
-    Route::post('/upload', [ArticleController::class, 'store'])->name('article.store');
+    // --- SUB MENU 1: UNGGAH KARYA ILMIAH (MULTI-STEP FORM) ---
+    // Tahap 1: Upload File Berkas
+    Route::get('/upload', [ArticleController::class, 'createStep1'])->name('article.create');
+    Route::post('/upload/step1', [ArticleController::class, 'storeStep1'])->name('article.storeStep1');
+
+    // Tahap 2: Isi Metadata (ID didapat setelah Tahap 1 sukses)
+    Route::get('/upload/metadata/{id}', [ArticleController::class, 'createStep2'])->name('article.createStep2');
+    Route::post('/upload/metadata/{id}', [ArticleController::class, 'storeStep2'])->name('article.storeStep2');
+
+    // --- SUB MENU 2: AJUKAN VERIFIKASI ---
+    Route::get('/verifikasi', [ArticleController::class, 'indexVerification'])->name('article.indexVerification');
+    Route::post('/verifikasi/ajukan/{id}', [ArticleController::class, 'submitVerification'])->name('article.submitVerification');
+
+    // --- HISTORI & REVISI (FITUR LAMA TETAP AMAN) ---
     Route::get('/history', [ArticleController::class, 'history'])->name('article.history');
     Route::get('/article/{id}/revisi', [ArticleController::class, 'edit'])->name('article.edit');
     Route::put('/article/{id}/update', [ArticleController::class, 'update'])->name('article.update');
+    Route::get('/repository/status-verifikasi/preview/{id}', [ArticleController::class, 'previewVerification'])->name('article.previewVerification');
 
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [DashboardController::class, 'profileUpdate'])->name('profile.update');
+
+    // Tampilan sub-menu status verifikasi karya ilmiah mahasiswa
+    Route::get('/status-verifikasi', [ArticleController::class, 'statusVerifikasi'])->name('article.statusVerifikasi');
+    Route::get('/notifications/read/{id}', [\App\Http\Controllers\User\DashboardController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // Group Route untuk Admin & Superadmin
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
-
     Route::get('/notifications/read/{id}', [AdminDashboard::class, 'markAsRead'])->name('notifications.read');
-    // Di dalam Route::prefix('admin')->name('admin.')->group(function () { ... })
 
+    // Manajemen Pengguna
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::patch('/users/{id}/status', [UserController::class, 'updateStatus'])->name('users.status');
 
+    // Statistik & Profil
     Route::get('/chart-data/{range}', [AdminDashboard::class, 'getChartData'])->name('chart.data');
-
     Route::get('/profile', [AdminDashboard::class, 'profile'])->name('profile');
     Route::post('/profile/update', [AdminDashboard::class, 'profileUpdate'])->name('profile.update');
+
+    // ===================================================================
+    // --- STRUKTUR 3 SUB-MENU REPOSITORI SESUAI ALUR BARU (EDI) ---
+    // ===================================================================
+
+    // [Sub-Menu 1] Menunggu Validasi (Status: pending)
+    Route::get('/repository/pending', [\App\Http\Controllers\Admin\ArticleController::class, 'pending'])->name('repository.pending');
+    Route::get('/repository/verify/{id}', [\App\Http\Controllers\Admin\ArticleController::class, 'verify'])->name('repository.verify');
+    Route::patch('/repository/update-status/{id}', [\App\Http\Controllers\Admin\ArticleController::class, 'updateStatus'])->name('repository.update-status');
+
+    // [Sub-Menu 2] Publikasikan Karya Ilmiah (Status: verified)
+    Route::get('/repository/publikasi', [\App\Http\Controllers\Admin\ArticleController::class, 'publikasi'])->name('repository.publikasi');
+    Route::get('/repository/publikasi/detail/{id}', [\App\Http\Controllers\Admin\ArticleController::class, 'detailPublikasi'])->name('repository.detailPublikasi');
+    Route::post('/repository/publikasi/konfirmasi/{id}', [\App\Http\Controllers\Admin\ArticleController::class, 'konfirmasiPublikasi'])->name('repository.konfirmasiPublikasi');
+
+    // [Sub-Menu 3] Data Koleksi (Status: published)
+    Route::get('/repository/index', [\App\Http\Controllers\Admin\ArticleController::class, 'index'])->name('repository.index');
+    Route::get('/repository/show/{id}', [\App\Http\Controllers\Admin\ArticleController::class, 'show'])->name('repository.show');
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -99,4 +131,6 @@ Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->n
 // Proses pengecekan identitas
 Route::post('/forgot-password', [AuthController::class, 'processForgotPassword'])->name('password.email');
 Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('password.update');
-Route::get('/notifications/read/{id}', [App\Http\Controllers\User\DashboardController::class, 'markAsRead'])->name('user.notifications.read');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/notifications/read/{id}', [DashboardController::class, 'markAsRead'])->name('notifications.read');
+Route::get('/chart-data/{range}', [DashboardController::class, 'getChartData'])->name('chart.data');

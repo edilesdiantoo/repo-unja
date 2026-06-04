@@ -4,11 +4,11 @@
     <div class="card shadow rounded-4 border-0">
         <div class="card-body">
             <div class="row align-items-center g-4 mb-4">
-                <div class="col-6">
-                    <h4 class="fw-bold text-dark"><i class="fas fa-database text-success me-2"></i>Data Koleksi Repository
-                    </h4>
-                </div>
-                <div class="col-6 text-end">
+                <div class="col-12">
+                    <h4 class="fw-bold text-dark"><i class="fas fa-bullhorn text-primary me-2"></i>Antrean Publikasi Karya
+                        Ilmiah</h4>
+                    <p class="text-muted small mb-0">Daftar karya ilmiah mahasiswa yang telah lolos verifikasi berkas dan
+                        siap dirilis ke publik.</p>
                 </div>
             </div>
             <div class="row">
@@ -70,12 +70,12 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary px-3 py-1.5 rounded-2"> Published </span>
+                                            <span class="badge bg-info text-white"> Terverifikasi </span>
                                         </td>
                                         <td class="text-center">
-                                            <a href="{{ route('admin.repository.show', $item->id) }}"
-                                                class="text-secondary">
-                                                <i class="fa fa-eye"></i>
+                                            <a href="{{ route('admin.repository.detailPublikasi', $item->id) }}"
+                                                class="btn btn-primary btn-sm rounded-3 fw-bold">
+                                                <i class="fas fa-paper-plane me-1"></i> Rilis
                                             </a>
                                         </td>
                                     </tr>

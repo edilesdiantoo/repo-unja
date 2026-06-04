@@ -104,27 +104,60 @@
                             {{ $article->abstract ?? 'Abstrak tidak tersedia untuk dokumen ini.' }}
                         </p>
 
-                        <h5 class="fw-bold mt-4 mb-3">Kata Kunci</h5>
-                        <p>
-                            @php $tags = explode(',', $article->keywords); @endphp
-                            @foreach ($tags as $tag)
-                                <span
-                                    class="badge bg-light text-dark border px-3 py-2 fw-normal mb-1">{{ trim($tag) }}</span>
+                        {{-- Bagian Kata Kunci Lama --}}
+                        <div class="mt-3">
+                            <h5>Kata Kunci</h5>
+                            @foreach (explode(',', $article->keywords) as $kw)
+                                {{-- Kita bungkus ke link pencarian --}}
+                                <a href="{{ route('web.browse', ['keyword' => trim($kw)]) }}"
+                                    class="btn btn-outline-secondary btn-sm me-1 mb-1">
+                                    {{ trim($kw) }}
+                                </a>
                             @endforeach
-                        </p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white fw-bold py-3">Informasi Detail</div>
                     <div class="card-body p-4">
-                        <div class="mb-2"><span class="metadata-label">Pembimbing 1</span>:
-                            {{ $article->pembimbing_1 ?? '-' }}</div>
-                        <div class="mb-2"><span class="metadata-label">Pembimbing 2</span>:
-                            {{ $article->pembimbing_2 ?? '-' }}</div>
+                        {{-- Pembimbing 1 diubah menjadi Link Aktif --}}
+                        <div class="mb-2">
+                            <span class="metadata-label">Pembimbing 1</span>:
+                            @if ($article->pembimbing_1)
+                                <a href="{{ route('web.browse', ['dosen' => $article->pembimbing_1]) }}"
+                                    class="text-decoration-none fw-bold text-primary">
+                                    {{ $article->pembimbing_1 }}
+                                </a>
+                            @else
+                                -
+                            @endif
+                        </div>
+
+                        {{-- Pembimbing 2 diubah menjadi Link Aktif --}}
+                        <div class="mb-2">
+                            <span class="metadata-label">Pembimbing 2</span>:
+                            @if ($article->pembimbing_2)
+                                <a href="{{ route('web.browse', ['dosen' => $article->pembimbing_2]) }}"
+                                    class="text-decoration-none fw-bold text-primary">
+                                    {{ $article->pembimbing_2 }}
+                                </a>
+                            @else
+                                -
+                            @endif
+                        </div>
+
                         <div class="mb-2"><span class="metadata-label">Fakultas</span>: Hukum</div>
-                        <div class="mb-2"><span class="metadata-label">Program Studi</span>:
-                            {{ $article->study_program ?? 'Ilmu Hukum' }}</div>
+
+                        {{-- Program Studi diubah menjadi Link Aktif --}}
+                        <div class="mb-2">
+                            <span class="metadata-label">Program Studi</span>:
+                            <a href="{{ route('web.browse', ['field' => $article->study_program ?? 'Ilmu Hukum']) }}"
+                                class="text-decoration-none fw-bold text-danger">
+                                {{ $article->study_program ?? 'Ilmu Hukum' }}
+                            </a>
+                        </div>
+
                         <div class="mb-2"><span class="metadata-label">Penerbit</span>: Universitas Jambi</div>
                         <div class="mb-2"><span class="metadata-label">Bahasa</span>: Indonesia</div>
                     </div>

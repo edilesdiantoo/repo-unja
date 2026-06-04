@@ -11,7 +11,12 @@
 
         <a href="{{ route('user.article.create') }}"
             class="{{ request()->routeIs('user.article.create') ? 'active' : '' }}">
-            <i class="fa fa-cloud-arrow-up me-2"></i> Upload Karya Ilmiah
+            <i class="fa fa-cloud-arrow-up me-2"></i> Unggah Karya Ilmiah
+        </a>
+        <a class="nav-link {{ Route::is('user.article.statusVerifikasi') ? 'active' : '' }}"
+            href="{{ route('user.article.statusVerifikasi') }}">
+            <i class="fas fa-tasks me-2"></i>
+            <span>Ajukan Verifikasi</span>
         </a>
         <a href="{{ route('user.article.history') }}"
             class="{{ request()->routeIs('user.article.history') ? 'active' : '' }}">

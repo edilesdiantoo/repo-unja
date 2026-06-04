@@ -28,15 +28,28 @@
                 </li>
 
                 <div style="max-height: 350px; overflow-y: auto;">
-                    {{-- Pakai @foreach atau @forelse dari variabel $notifications --}}
                     @forelse($notifications as $notif)
                         <li>
-                            <a class="dropdown-item py-3" href="{{ route('admin.notifications.read', $notif->id) }}">
+                            <a class="dropdown-item py-3 {{ !$notif->is_read ? 'bg-light' : '' }}"
+                                href="{{ route('admin.notifications.read', $notif->id) }}">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    @php
+                                        $badgeColor = match (strtolower($notif->status)) {
+                                            'pending' => 'bg-warning text-dark',
+                                            'verified' => 'bg-info text-white',
+                                            'published' => 'bg-success text-white',
+                                            default => 'bg-secondary',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }}"
+                                        style="font-size: 0.65rem;">{{ $notif->status }}</span>
+                                </div>
                                 <div class="d-flex flex-column">
-                                    <span class="badge bg-info mb-1"
-                                        style="width: fit-content;">{{ $notif->status }}</span>
-                                    <small class="fw-bold">{{ $notif->title }}</small>
-                                    <small class="text-muted text-wrap">{{ $notif->message }}</small>
+                                    {{-- Teks judul dan pesan dibuat wrap tebal dan kontras --}}
+                                    <small class="fw-bold text-dark text-wrap mb-1 d-block"
+                                        style="line-height: 1.2;">{{ $notif->title }}</small>
+                                    <small class="text-secondary text-wrap d-block"
+                                        style="font-size: 0.75rem; line-height: 1.3;">{{ $notif->message }}</small>
                                 </div>
                             </a>
                         </li>
@@ -45,6 +58,7 @@
                         </li>
                     @empty
                         <li class="py-4 text-center">
+                            <i class="fa-regular fa-bell-slash text-muted mb-2 d-block fa-lg"></i>
                             <small class="text-muted">Tidak ada antrean validasi baru</small>
                         </li>
                     @endforelse

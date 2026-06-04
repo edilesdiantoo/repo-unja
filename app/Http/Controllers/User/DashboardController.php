@@ -47,12 +47,44 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * PERBAIKAN & SINKRONISASI LOGIKA REDIRECT PINTAR USER
+     * Menangani klik link notifikasi dari lonceng user-topbar
+     */
     public function markAsRead($id)
     {
+        // Pastikan notifikasi ini murni milik user yang sedang login
         $notification = Notification::where('user_id', auth()->id())->findOrFail($id);
+
+        // 1. Set status menjadi sudah dibaca (is_read = true)
         $notification->update(['is_read' => true]);
 
-        return redirect()->back();
+        $statusNotif = strtolower($notification->status);
+
+        // 2. Cari data artikel terbaru milik mahasiswa ini yang statusnya sesuai
+        $article = Article::where('user_id', auth()->id())
+            ->when($statusNotif == 'revision', function ($query) {
+                return $query->where('status', 'revision');
+            })
+            ->when($statusNotif == 'published', function ($query) {
+                return $query->where('status', 'published');
+            })
+            ->when($statusNotif == 'verified', function ($query) {
+                return $query->where('status', 'verified');
+            })
+            ->latest()
+            ->first();
+
+        // 3. Eksekusi Pengalihan Halaman Pintar
+        if ($article) {
+            // Jika status berkas butuh revisi, langsung antar mahasiswa ke halaman Form Edit Perbaikan
+            if ($statusNotif == 'revision') {
+                return redirect()->route('user.article.edit', $article->id);
+            }
+        }
+
+        // Fallback default: Jika tidak masuk kondisi di atas, oper mahasiswa ke halaman tabel Riwayat Data
+        return redirect()->route('user.article.history')->with('success', 'Notifikasi telah dibaca.');
     }
 
     public function profile()

@@ -96,6 +96,7 @@
                                         </div>
                                     </div>
 
+                                    {{-- GANTI BAGIAN PANEL VERIFIKASI INI --}}
                                     <div class="p-3 border border-warning rounded bg-white mb-3">
                                         <h6 class="fw-bold text-warning border-bottom pb-2 mb-3">Panel Verifikasi</h6>
 
@@ -103,12 +104,14 @@
                                             <label class="form-label fw-bold">Keputusan <span
                                                     class="text-danger">*</span></label>
                                             <div class="form-check">
+                                                {{-- Nilai VALUE diganti dari 'published' menjadi 'verified' --}}
                                                 <input class="form-check-input" type="radio" name="status"
-                                                    id="statusPublished" value="published"
-                                                    {{ old('status', $article->status) == 'published' ? 'checked' : '' }}
+                                                    id="statusVerified" value="verified"
+                                                    {{ old('status', $article->status) == 'verified' ? 'checked' : '' }}
                                                     required>
                                                 <label class="form-check-label text-success fw-bold"
-                                                    for="statusPublished">Setujui (Publish)</label>
+                                                    for="statusVerified">Lolos Verifikasi (Pindahkan ke Antrean
+                                                    Publikasi)</label>
                                             </div>
                                             <div class="form-check border-top pt-2 mt-2">
                                                 <input class="form-check-input" type="radio" name="status"
@@ -130,6 +133,7 @@
                                         </div>
 
                                         {{-- Container Catatan (Muncul Otomatis via JS) --}}
+                                        {{-- Di baris ini, pastikan in_array mengecek 'verified' bukan 'published' --}}
                                         <div class="mb-3" id="containerCatatan"
                                             style="display: {{ in_array(old('status', $article->status), ['revision', 'rejected']) ? 'block' : 'none' }};">
                                             <label class="form-label fw-bold">Catatan Perbaikan <span
@@ -142,8 +146,8 @@
                                         </div>
 
                                         <div class="alert alert-info small py-2">
-                                            <i class="fas fa-info-circle me-1"></i> Mahasiswa akan menerima notifikasi
-                                            status setelah tombol submit diklik.
+                                            <i class="fas fa-info-circle me-1"></i> Berkas yang lolos akan dipindahkan ke
+                                            sub-menu "Publikasikan Karya Ilmiah".
                                         </div>
 
                                         <button type="submit" class="btn btn-success w-100 fw-bold py-2">
@@ -179,7 +183,10 @@
             radioStatus.forEach((radio) => {
                 radio.addEventListener('change', function() {
                     toggleCatatan(this.value);
-                    if (this.value !== 'published') {
+
+                    // MODIFIKASI DI SINI: 
+                    // Kursor otomatis fokus ke textarea HANYA JIKA statusnya beralih ke 'revision' atau 'rejected'
+                    if (this.value === 'revision' || this.value === 'rejected') {
                         catatanInput.focus();
                     }
                 });

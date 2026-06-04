@@ -109,8 +109,9 @@
                                 <label for="date" class="form-label fw-medium">
                                     <i class="far fa-calendar-alt text-unja me-1"></i> Tahun Publikasi (YYYY)
                                 </label>
-                                <input type="number" name="year" class="form-control" id="date"
-                                    placeholder="Contoh: 2024" value="{{ request('year') }}">
+                                {{-- Cari bagian input tahun publikasi, buat kosong secara default jika tidak ada request --}}
+                                <input type="number" name="year" class="form-control" placeholder="Contoh: 2026"
+                                    value="{{ request('year') }}">
                             </div>
 
                             <div class="mb-4">
