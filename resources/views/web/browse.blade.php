@@ -85,7 +85,7 @@
                                 </label>
                                 <select name="field" class="form-select" id="subjects">
                                     <option value="">Pilih</option>
-                                    @foreach (['Hukum Pidana', 'Hukum Perdata', 'Hukum Bisnis', 'Hukum Tatanegara', 'Hukum Administrasi Negara', 'Hukum Internasional'] as $field)
+                                    @foreach (['Hukum Pidana', 'Hukum Perdata', 'Hukum Tatanegara', 'Hukum Administrasi Negara', 'Hukum Internasional'] as $field)
                                         <option value="{{ $field }}"
                                             {{ request('field') == $field ? 'selected' : '' }}>{{ $field }}</option>
                                     @endforeach
