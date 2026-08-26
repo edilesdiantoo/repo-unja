@@ -13,7 +13,8 @@
                         </h4>
                         <p class="text-muted small mb-0">Pantau proses pengajuan dokumen Anda di bawah ini. Berkas berstatus
                             <strong>Draft</strong> atau <strong>Butuh Revisi</strong> memerlukan tindakan perbaikan sebelum
-                            diperiksa ulang oleh Admin.</p>
+                            diperiksa ulang oleh Admin.
+                        </p>
                     </div>
                 </div>
 
@@ -30,7 +31,7 @@
                         <table class="table table-hover align-middle border">
                             <thead class="bg-light">
                                 <tr>
-                                    <th>Judul / Penulis / Prodi</th>
+                                    <th>Judul / Penulis & Identitas / Prodi</th>
                                     <th>Jenis Dokumen</th>
                                     <th>Status Pemeriksaan</th>
                                     <th class="text-center">Aksi / Manajemen</th>
@@ -42,15 +43,26 @@
                                         <td>
                                             <div class="fw-bold text-dark">{{ $item->title ?? 'Judul Belum Diisi (Draft)' }}
                                             </div>
-                                            <small class="text-muted">Penulis: {{ $item->author ?? '-' }} | Prodi:
-                                                {{ $item->study_program ?? '-' }}</small>
+
+                                            <div class="mt-1">
+                                                <small class="text-muted">Penulis:
+                                                    <strong>{{ $item->author ?? '-' }}</strong></small>
+
+                                                {{-- Menampilkan NIM / NIDN --}}
+                                                <span class="badge bg-light text-secondary border px-2 py-0.5 ms-1">
+                                                    <i class="far fa-id-card me-1 text-danger"></i>
+                                                    {{ $item->user->identity_number ?? auth()->user()->identity_number }}
+                                                </span>
+
+                                                <small class="text-muted ms-1">| Prodi:
+                                                    {{ $item->study_program ?? '-' }}</small>
+                                            </div>
                                         </td>
                                         <td>
                                             <span
                                                 class="badge bg-light text-dark border">{{ $item->document_type ?? 'Belum Set' }}</span>
                                         </td>
                                         <td>
-                                            {{-- BADGE DINAMIS FILTER STATUS REVISI & DRAFT (SOLUSI EDI) --}}
                                             @if ($item->status == 'revision')
                                                 <span
                                                     class="badge bg-warning text-dark px-3 py-1.5 rounded-2 shadow-sm fw-bold">
@@ -63,15 +75,12 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            {{-- TOMBOL AKSI MENYESUAIKAN STATUS TERBARU --}}
                                             @if ($item->status == 'revision')
-                                                {{-- Jika butuh revisi, langsung arahkan ke form edit satu halaman penuh --}}
                                                 <a href="{{ route('user.article.edit', $item->id) }}"
                                                     class="btn btn-warning btn-sm px-3 rounded-3 fw-bold text-dark shadow-sm">
                                                     <i class="fas fa-tools me-1"></i> Perbaiki Data
                                                 </a>
                                             @else
-                                                {{-- Jika masih draf awal, arahkan ke alur pratinjau konfirmasi --}}
                                                 <a href="{{ route('user.article.previewVerification', $item->id) }}"
                                                     class="btn btn-danger btn-sm px-3 rounded-3 fw-bold shadow-sm">
                                                     <i class="fas fa-arrow-right me-1"></i> Periksa Detail
@@ -91,6 +100,9 @@
 
 @push('scripts')
     <script>
-        // Jalur data bersih terbagi dengan aman.
+        // DataTables mode silent
+        if (typeof $.fn.dataTable !== 'undefined') {
+            $.fn.dataTable.ext.errMode = 'none';
+        }
     </script>
 @endpush

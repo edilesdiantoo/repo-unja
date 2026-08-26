@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <--- WAJIB TAMBAHKAN INI
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -32,18 +32,14 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
-            // --- UPDATE TERAKHIR LOGIN DI SINI ---
             $user->update([
                 'last_login_at' => now(),
             ]);
-            // -------------------------------------
 
-            // --- TAMBAHKAN LOG LOGIN DI SINI ---
             ActivityLog::create([
                 'user_id' => $user->id,
                 'description' => 'Login ke dalam sistem',
             ]);
-            // -----------------------------------
 
             if ($user->role === 'admin' || $user->role === 'superadmin') {
                 return redirect()->intended(route('admin.dashboard'));
@@ -57,15 +53,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // --- TAMBAHKAN LOG LOGOUT DI SINI ---
-        // Catat sebelum proses logout menghapus session
         if (Auth::check()) {
             ActivityLog::create([
                 'user_id' => Auth::id(),
                 'description' => 'Logout dari sistem',
             ]);
         }
-        // ------------------------------------
 
         Auth::logout();
         $request->session()->invalidate();
@@ -87,7 +80,6 @@ class AuthController extends Controller
             'identity_number.exists' => 'Nomor Identitas (NIM/NIDN) tidak ditemukan.',
         ]);
 
-        // Jika ketemu, simpan identitas di session sementara dan arahkan ke halaman input password baru
         session(['reset_identity' => $request->identity_number]);
 
         return view('auth.update-password');
@@ -105,14 +97,56 @@ class AuthController extends Controller
             return redirect()->route('password.request')->withErrors(['identity_number' => 'Sesi habis, silakan masukkan NIM kembali.']);
         }
 
-        // Update Password di Database
         $user = User::where('identity_number', $identity)->first();
         $user->password = bcrypt($request->password);
         $user->save();
 
-        // Hapus session reset
         session()->forget('reset_identity');
 
         return redirect()->route('login')->with('success', 'Password berhasil diperbarui! Silakan login.');
+    }
+
+    // --- FITUR REGISTRASI ---
+
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'identity_number' => 'required|string|max:50|unique:users,identity_number',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'identity_number.required' => 'NIM / NIDN wajib diisi.',
+            'identity_number.unique' => 'NIM / NIDN sudah terdaftar.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min' => 'Password minimal 8 karakter.',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'identity_number' => $request->identity_number,
+            'email' => $request->email,
+            'role' => $request->role, // user atau dosen
+            'is_active' => 1,
+            'password' => bcrypt($request->password),
+        ]);
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'description' => 'Mendaftar akun baru sebagai user/mahasiswa',
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('user.dashboard')->with('success', 'Registrasi berhasil! Selamat datang di Repositori FH UNJA.');
     }
 }

@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Article;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -138,7 +139,7 @@ class ArticleController extends Controller
 
         // NOTIFIKASI SELEBRASI: Hanya dikirim ke akun mahasiswa, tidak membebani lonceng admin
         Notification::create([
-            'user_id' => $article->user_id, // Ditargetkan langsung ke akun mahasiswa
+            'user_id' => $article->user_id,
             'title' => 'Publikasi Resmi Disetujui! 🎉',
             'message' => "Selamat! Karya ilmiah Anda yang berjudul '".$article->title."' telah resmi dipublikasikan dan saat ini sudah dapat diakses oleh publik.",
             'status' => 'Published',
@@ -175,5 +176,99 @@ class ArticleController extends Controller
         $article = Article::with('user')->findOrFail($id);
 
         return view('admin.repository.show', compact('article'));
+    }
+
+    /**
+     * Menampilkan form edit karya ilmiah untuk Admin
+     */
+    public function edit($id)
+    {
+        $article = Article::findOrFail($id);
+
+        return view('admin.repository.edit', compact('article'));
+    }
+
+    /**
+     * Memproses update data karya ilmiah oleh Admin
+     */
+    public function update(Request $request, $id)
+    {
+        $article = Article::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'abstract' => 'required|string',
+            'keywords' => 'required|string|max:255',
+            'study_program' => 'required|string',
+            'year' => 'required|numeric',
+            'document_type' => 'required|string',
+            'access_type' => 'required|in:Fulltext,Abstrak',
+            'pdf_file' => 'nullable|file|mimes:pdf|max:20480',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        $data = [
+            'title' => $request->title,
+            'author' => $request->author,
+            'abstract' => $request->abstract,
+            'keywords' => $request->keywords,
+            'study_program' => $request->study_program,
+            'year' => $request->year,
+            'document_type' => $request->document_type,
+            'access_type' => $request->access_type,
+            'pembimbing_1' => in_array($request->document_type, ['Skripsi', 'Tesis', 'Disertasi']) ? $request->pembimbing_1 : null,
+            'pembimbing_2' => in_array($request->document_type, ['Skripsi', 'Tesis', 'Disertasi']) ? $request->pembimbing_2 : null,
+            'accreditation_level' => $request->document_type === 'Jurnal' ? $request->tingkat_akreditasi : null,
+        ];
+
+        // Kelola file PDF baru jika diunggah
+        if ($request->hasFile('pdf_file')) {
+            if ($article->pdf_file && Storage::disk('public')->exists($article->pdf_file)) {
+                Storage::disk('public')->delete($article->pdf_file);
+            }
+            $data['pdf_file'] = $request->file('pdf_file')->store('articles/pdf', 'public');
+        }
+
+        // Kelola Cover Image baru jika diunggah
+        if ($request->hasFile('cover_image')) {
+            if ($article->cover_image && Storage::disk('public')->exists($article->cover_image)) {
+                Storage::disk('public')->delete($article->cover_image);
+            }
+            $data['cover_image'] = $request->file('cover_image')->store('articles/covers', 'public');
+        }
+
+        $article->update($data);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'description' => 'Memperbarui metadata/berkas karya ilmiah ID: #'.$id.' ('.$article->title.')',
+        ]);
+
+        return redirect()->back()->with('success', 'Data karya ilmiah berhasil diperbarui oleh Admin.');
+    }
+
+    /**
+     * Hapus Karya Ilmiah beserta Berkas Fisiknya
+     */
+    public function destroy($id)
+    {
+        $article = Article::findOrFail($id);
+
+        if ($article->pdf_file && Storage::disk('public')->exists($article->pdf_file)) {
+            Storage::disk('public')->delete($article->pdf_file);
+        }
+        if ($article->cover_image && Storage::disk('public')->exists($article->cover_image)) {
+            Storage::disk('public')->delete($article->cover_image);
+        }
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'description' => 'Menghapus permanen karya ilmiah ID: #'.$id.' ('.$article->title.')',
+        ]);
+
+        $article->delete();
+
+        return redirect()->back()->with('success', 'Karya ilmiah berhasil dihapus dari sistem.');
     }
 }

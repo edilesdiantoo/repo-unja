@@ -109,7 +109,6 @@
                                 <label for="date" class="form-label fw-medium">
                                     <i class="far fa-calendar-alt text-unja me-1"></i> Tahun Publikasi (YYYY)
                                 </label>
-                                {{-- Cari bagian input tahun publikasi, buat kosong secara default jika tidak ada request --}}
                                 <input type="number" name="year" class="form-control" placeholder="Contoh: 2026"
                                     value="{{ request('year') }}">
                             </div>
@@ -121,8 +120,6 @@
                                 <input type="text" name="q" class="form-control" id="subject"
                                     placeholder="Masukan kata kunci judul" value="{{ request('q') }}">
                             </div>
-
-                            {{-- Tambahan di dalam <form action="{{ route('web.browse') }}" method="GET"> --}}
 
                             <div class="mb-4">
                                 <label for="user_type" class="form-label fw-medium">
@@ -189,16 +186,35 @@
                             @forelse($results as $article)
                                 <a href="{{ route('web.article.show', $article->id) }}"
                                     class="list-group-item d-flex align-items-start justify-content-between py-3">
-                                    <div>
+                                    <div class="pe-3">
                                         <div class="mb-1 text-unja fw-bold">{{ $article->title }}</div>
-                                        <div class="mb-1 small text-dark">{{ $article->author }}
-                                            ({{ $article->created_at->format('Y') }})
+
+                                        {{-- Nama Penulis & NIM / NIDN --}}
+                                        <div class="mb-1 small text-dark d-flex align-items-center flex-wrap gap-2">
+                                            <span class="fw-semibold">{{ $article->author }}</span>
+                                            @if (optional($article->user)->identity_number)
+                                                <span class="badge bg-light text-secondary border px-2 py-0.5"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="far fa-id-card me-1 text-danger"></i>
+                                                    {{ $article->user->identity_number }}
+                                                </span>
+                                            @endif
+                                            <span
+                                                class="text-muted">({{ $article->year ?? $article->created_at->format('Y') }})</span>
                                         </div>
-                                        <div class="text-muted small">{{ ucfirst($article->document_type) }} |
-                                            {{ $article->study_program ?? 'Hukum' }}</div>
+
+                                        <div class="text-muted small">
+                                            <i class="bi bi-tag-fill me-1"></i>
+                                            {{ ucfirst($article->document_type ?? $article->category) }}
+                                            <span class="mx-1">|</span>
+                                            <i class="bi bi-bookmarks-fill me-1"></i>
+                                            {{ $article->study_program ?? 'Hukum' }}
+                                        </div>
                                     </div>
                                     @php
-                                        $initial = strtoupper(substr($article->category, 0, 1));
+                                        $initial = strtoupper(
+                                            substr($article->category ?? $article->document_type, 0, 1),
+                                        );
                                         $badgeColor = match ($initial) {
                                             'T' => 'bg-danger',
                                             'J' => 'bg-warning',
@@ -206,7 +222,8 @@
                                             default => 'bg-secondary',
                                         };
                                     @endphp
-                                    <small class="badge {{ $badgeColor }} rounded-pill">{{ $initial }}</small>
+                                    <small
+                                        class="badge {{ $badgeColor }} rounded-pill px-2.5 py-1">{{ $initial }}</small>
                                 </a>
                             @empty
                                 <div class="text-center py-5">
@@ -232,12 +249,14 @@
         const sortBtn = document.getElementById('btn-sort');
         const sortIcon = document.getElementById('sort-icon');
 
-        sortBtn.addEventListener('click', function() {
-            if (sortIcon.classList.contains('fa-arrow-down-a-z')) {
-                sortIcon.className = 'fa fa-arrow-up-z-a';
-            } else {
-                sortIcon.className = 'fa fa-arrow-down-a-z';
-            }
-        });
+        if (sortBtn) {
+            sortBtn.addEventListener('click', function() {
+                if (sortIcon.classList.contains('fa-arrow-down-a-z')) {
+                    sortIcon.className = 'fa fa-arrow-up-z-a';
+                } else {
+                    sortIcon.className = 'fa fa-arrow-down-a-z';
+                }
+            });
+        }
     </script>
 @endsection

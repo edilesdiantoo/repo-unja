@@ -59,16 +59,32 @@
                                     class="list-group-item list-group-item-action d-flex align-items-start justify-content-between py-3 px-0 border-bottom">
                                     <div class="pe-3">
                                         <div class="mb-1 text-unja fw-bold" style="font-size: 1.1rem; line-height: 1.4;">
-                                            {{ $article->title }}</div>
-                                        <div class="mb-1 small text-dark fw-medium">{{ $article->author }}
-                                            ({{ $article->created_at->format('Y') }})
+                                            {{ $article->title }}
                                         </div>
+
+                                        {{-- Penulis & NIM / NIDN --}}
+                                        <div
+                                            class="mb-1 small text-dark fw-medium d-flex align-items-center flex-wrap gap-2">
+                                            <span>{{ $article->author }}</span>
+                                            @if (optional($article->user)->identity_number)
+                                                <span class="badge bg-light text-secondary border px-2 py-0.5"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="far fa-id-card me-1 text-danger"></i>
+                                                    {{ $article->user->identity_number }}
+                                                </span>
+                                            @endif
+                                            <span
+                                                class="text-muted">({{ $article->year ?? $article->created_at->format('Y') }})</span>
+                                        </div>
+
                                         <div class="text-muted small">
                                             <i class="bi bi-tag-fill me-1"></i> {{ ucfirst($article->document_type) }}
                                             <span class="mx-2">|</span>
-                                            <i class="bi bi-bookmarks-fill me-1"></i> {{ $article->field ?? 'Hukum' }}
+                                            <i class="bi bi-bookmarks-fill me-1"></i>
+                                            {{ $article->study_program ?? ($article->field ?? 'Hukum') }}
                                         </div>
                                     </div>
+
                                     @php
                                         $badgeClass = match (strtolower($article->document_type)) {
                                             'skripsi' => 'bg-info',
@@ -77,8 +93,9 @@
                                             default => 'bg-primary',
                                         };
                                     @endphp
-                                    <span
-                                        class="badge {{ $badgeClass }} rounded-pill px-3">{{ strtoupper(substr($article->document_type, 0, 1)) }}</span>
+                                    <span class="badge {{ $badgeClass }} rounded-pill px-3">
+                                        {{ strtoupper(substr($article->document_type, 0, 1)) }}
+                                    </span>
                                 </a>
                             @empty
                                 <div class="py-5 text-center">

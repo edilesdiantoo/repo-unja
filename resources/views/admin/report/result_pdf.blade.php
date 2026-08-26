@@ -57,6 +57,11 @@
         .footer-table td {
             border: none !important;
         }
+
+        .text-muted {
+            color: #555;
+            font-size: 9.5px;
+        }
     </style>
 </head>
 
@@ -75,9 +80,9 @@
         <thead>
             <tr>
                 <th width="3%">No</th>
-                <th width="10%">Publikasi</th>
+                <th width="9%">Publikasi</th>
                 <th>Judul</th>
-                <th width="12%">Penulis</th>
+                <th width="14%">Penulis & NIM/NIDN</th>
                 <th width="10%">Program Studi</th>
                 <th width="15%">Pembimbing</th>
                 <th width="8%">Akreditasi</th>
@@ -90,14 +95,16 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ \Carbon\Carbon::parse($article->created_at)->format('d/m/Y') }}</td>
                     <td>{{ $article->title }}</td>
-                    <td>{{ $article->author }}</td>
+                    <td>
+                        <strong>{{ $article->author }}</strong><br>
+                        <span class="text-muted">NIM: {{ $article->user->identity_number ?? '-' }}</span>
+                    </td>
                     <td>{{ $article->study_program }}</td>
                     <td>
-                        {{-- Menggunakan nama variabel pembimbing sesuai permintaan --}}
                         1. {{ $article->pembimbing_1 ?? '-' }}<br>
                         2. {{ $article->pembimbing_2 ?? '-' }}
                     </td>
-                    <td class="text-center">{{ $article->accreditation_level }}</td>
+                    <td class="text-center">{{ $article->accreditation_level ?? '-' }}</td>
                     <td class="text-center">{{ $article->access_type }}</td>
                 </tr>
             @empty
@@ -127,9 +134,8 @@
                     Admin Repositori FH UNJA
                 </p>
                 <br><br><br><br>
-                {{-- Nama diambil dari user yang sedang login atau bisa diketik manual --}}
                 <p><strong>( {{ Auth::user()->name }} )</strong></p>
-                <p>NIP. {{ Auth::user()->identity_number ?? '____________________' }}</p>
+                <p>NIP/NIDN. {{ Auth::user()->identity_number ?? '____________________' }}</p>
             </td>
         </tr>
     </table>

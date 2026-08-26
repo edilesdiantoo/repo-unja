@@ -86,11 +86,21 @@
             <div class="col-lg-8">
                 <div class="card shadow-sm border-0 mb-4 rounded-4">
                     <div class="card-body p-4 p-md-5">
-                        <span class="badge-type mb-3 d-inline-block">{{ ucfirst($article->category) }}</span>
+                        <span
+                            class="badge-type mb-3 d-inline-block">{{ ucfirst($article->category ?? $article->document_type) }}</span>
                         <h2 class="fw-bold text-unja mb-3" style="line-height: 1.4;">{{ $article->title }}</h2>
 
                         <div class="d-flex flex-wrap align-items-center mb-4 text-muted small">
-                            <span class="me-3 mb-2"><i class="fas fa-user me-1 text-unja"></i> {{ $article->author }}</span>
+                            <span class="me-3 mb-2">
+                                <i class="fas fa-user me-1 text-unja"></i> {{ $article->author }}
+                                @if (optional($article->user)->identity_number)
+                                    <span class="badge bg-light text-secondary border px-2 py-0.5 ms-1"
+                                        style="font-size: 0.75rem;">
+                                        <i class="far fa-id-card me-1 text-danger"></i>
+                                        {{ $article->user->identity_number }}
+                                    </span>
+                                @endif
+                            </span>
                             <span class="me-3 mb-2"><i class="fas fa-calendar-alt me-1 text-unja"></i>
                                 {{ $article->created_at->translatedFormat('d F Y') }}</span>
                             <span class="mb-2"><i class="fas fa-eye me-1 text-unja"></i>
@@ -104,11 +114,9 @@
                             {{ $article->abstract ?? 'Abstrak tidak tersedia untuk dokumen ini.' }}
                         </p>
 
-                        {{-- Bagian Kata Kunci Lama --}}
                         <div class="mt-3">
                             <h5>Kata Kunci</h5>
                             @foreach (explode(',', $article->keywords) as $kw)
-                                {{-- Kita bungkus ke link pencarian --}}
                                 <a href="{{ route('web.browse', ['keyword' => trim($kw)]) }}"
                                     class="btn btn-outline-secondary btn-sm me-1 mb-1">
                                     {{ trim($kw) }}
@@ -121,7 +129,18 @@
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white fw-bold py-3">Informasi Detail</div>
                     <div class="card-body p-4">
-                        {{-- Pembimbing 1 diubah menjadi Link Aktif --}}
+                        {{-- Penulis & NIM/NIDN Detail --}}
+                        <div class="mb-2">
+                            <span class="metadata-label">Penulis</span>:
+                            <strong>{{ $article->author }}</strong>
+                            @if (optional($article->user)->identity_number)
+                                <span class="badge bg-light text-secondary border px-2 py-0.5 ms-2"
+                                    style="font-size: 0.75rem;">
+                                    <i class="far fa-id-card me-1 text-danger"></i> {{ $article->user->identity_number }}
+                                </span>
+                            @endif
+                        </div>
+
                         <div class="mb-2">
                             <span class="metadata-label">Pembimbing 1</span>:
                             @if ($article->pembimbing_1)
@@ -134,7 +153,6 @@
                             @endif
                         </div>
 
-                        {{-- Pembimbing 2 diubah menjadi Link Aktif --}}
                         <div class="mb-2">
                             <span class="metadata-label">Pembimbing 2</span>:
                             @if ($article->pembimbing_2)
@@ -149,7 +167,6 @@
 
                         <div class="mb-2"><span class="metadata-label">Fakultas</span>: Hukum</div>
 
-                        {{-- Program Studi diubah menjadi Link Aktif --}}
                         <div class="mb-2">
                             <span class="metadata-label">Program Studi</span>:
                             <a href="{{ route('web.browse', ['field' => $article->study_program ?? 'Ilmu Hukum']) }}"
@@ -165,7 +182,6 @@
             </div>
 
             <div class="col-lg-4">
-                {{-- Cover Image --}}
                 <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
                     <img src="{{ $article->cover_image && Storage::disk('public')->exists($article->cover_image)
                         ? asset('storage/' . $article->cover_image)
@@ -174,14 +190,12 @@
                         alt="Cover {{ $article->title }}">
                 </div>
 
-                {{-- Download Card --}}
                 <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
                     <div class="card-header bg-unja-hero text-white fw-bold py-3">
                         <i class="fas fa-download me-2"></i> Berkas File
                     </div>
                     <div class="card-body p-4">
                         <div class="list-group list-group-flush">
-
                             <div
                                 class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
                                 <div class="text-truncate me-2">
@@ -190,7 +204,6 @@
                                 </div>
 
                                 @auth
-                                    {{-- Tambahkan target="_blank" agar PDF terbuka di tab baru --}}
                                     <a href="{{ route('web.article.view', $article->id) }}" target="_blank"
                                         class="btn btn-sm btn-unja-primary rounded-pill px-3">
                                         <i class="fas fa-eye me-1"></i> Lihat

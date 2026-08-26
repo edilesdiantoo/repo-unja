@@ -7,7 +7,7 @@
         <div class="card-body">
             <div class="row align-items-center g-4 mb-4">
                 <div class="col-6">
-                    <h4>Data Karya Ilmiah</h4>
+                    <h4 class="fw-bold text-dark"><i class="fas fa-history text-danger me-2"></i>Data Karya Ilmiah</h4>
                 </div>
             </div>
             <div class="row">
@@ -20,7 +20,7 @@
                                     <th>Jenis</th>
                                     <th>Tanggal</th>
                                     <th>Judul Karya Ilmiah</th>
-                                    <th>Penulis</th>
+                                    <th>Penulis & Identitas</th>
                                     <th>Akses</th>
                                     <th>Status</th>
                                     <th class="text-center">Aksi</th>
@@ -38,7 +38,9 @@
                                                         ? 'bg-primary'
                                                         : ($item->document_type == 'Tesis'
                                                             ? 'bg-danger'
-                                                            : 'bg-success');
+                                                            : ($item->document_type == 'Disertasi'
+                                                                ? 'bg-dark'
+                                                                : 'bg-success'));
                                             @endphp
                                             <span class="badge {{ $color }} rounded-circle p-2"
                                                 title="{{ $item->document_type }}"
@@ -48,25 +50,33 @@
                                         </td>
                                         <td class="small text-muted">{{ $item->created_at->format('d M Y') }}</td>
                                         <td>
-                                            <small class="text-muted">{{ $item->study_program }} • Hukum •
+                                            <small class="text-muted d-block">{{ $item->study_program }} • Hukum •
                                                 {{ $item->year }}</small>
                                             <div class="fw-bold text-dark">{{ $item->title ?? 'Judul Belum Diisi (Draft)' }}
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="fw-bold">{{ $item->author ?? '-' }}</div>
+                                            <div class="fw-bold text-dark">{{ $item->author ?? '-' }}</div>
+
+                                            {{-- Menampilkan NIM / NIDN Penulis / Pengunggah --}}
+                                            <span
+                                                class="badge bg-light text-secondary border px-2 py-0.5 mt-1 d-inline-block">
+                                                <i class="far fa-id-card me-1 text-danger"></i>
+                                                {{ $item->user->identity_number ?? auth()->user()->identity_number }}
+                                            </span>
                                         </td>
                                         <td>
-                                            <span class="badge btn-outline-success border text-success px-2 py-1">
+                                            <span
+                                                class="badge border {{ ($item->access_type ?? 'Fulltext') == 'Fulltext' ? 'text-success border-success' : 'text-primary border-primary' }} px-2 py-1">
                                                 {{ $item->access_type ?? 'Fulltext' }}
                                             </span>
                                         </td>
                                         <td>
                                             @if ($item->status == 'published')
                                                 <span class="badge bg-primary px-2 py-1.5 rounded">Disetujui
-                                                    (Publish)</span>
+                                                    (Publish)
+                                                </span>
                                             @elseif($item->status == 'verified')
-                                                {{-- TAMBAHAN BADGE STATUS BARU UNTUK USER --}}
                                                 <span class="badge bg-info text-white px-2 py-1.5 rounded">Lolos Validasi
                                                     (Antrean Rilis)</span>
                                             @elseif($item->status == 'pending')
@@ -82,19 +92,18 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            {{-- MODIFIKASI AKSI DI SINI --}}
                                             @if ($item->status == 'revision')
-                                                {{-- Tombol ini akan aktif jika Admin meminta revisi --}}
                                                 <a href="{{ route('user.article.edit', $item->id) }}"
-                                                    class="btn btn-danger btn-sm">Revisi</a>
+                                                    class="btn btn-warning btn-sm fw-bold text-dark rounded-3 px-3 shadow-sm">
+                                                    <i class="fas fa-tools me-1"></i> Revisi
+                                                </a>
                                             @elseif($item->status == 'draft')
-                                                {{-- Tombol Ajukan khusus jika statusnya barusan diupload (Draft) --}}
                                                 <form action="{{ route('user.article.submitVerification', $item->id) }}"
                                                     method="POST" id="verifyForm-{{ $item->id }}" class="d-inline">
                                                     @csrf
                                                     <button type="button" onclick="verifyAction({{ $item->id }})"
-                                                        class="btn btn-danger btn-sm px-2">
-                                                        <i class="fas fa-paper-plane small"></i> Ajukan
+                                                        class="btn btn-danger btn-sm px-2 rounded-3 fw-bold shadow-sm">
+                                                        <i class="fas fa-paper-plane small me-1"></i> Ajukan
                                                     </button>
                                                 </form>
                                             @else
@@ -104,7 +113,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">Belum ada data karya ilmiah.</td>
+                                        <td colspan="8" class="text-center py-4 text-muted">Belum ada data karya ilmiah.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -116,16 +126,19 @@
     </div>
 @endsection
 
-{{-- TAMBAHKAN PUSH SCRIPTS UNTUK SWEETALERT AJUKAN --}}
 @push('scripts')
     <script>
+        if (typeof $.fn.dataTable !== 'undefined') {
+            $.fn.dataTable.ext.errMode = 'none';
+        }
+
         function verifyAction(id) {
             Swal.fire({
                 title: 'Ajukan Verifikasi?',
                 text: "Berkas akan dikirim ke Admin dan status berubah menjadi Menunggu Verifikasi.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#0d6efd',
+                confirmButtonColor: '#8B0000',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Ya, Ajukan!',
                 cancelButtonText: 'Batal',
@@ -136,7 +149,7 @@
                         title: 'Sedang Mengirim...',
                         allowOutsideClick: false,
                         didOpen: () => {
-                            Swal.showLoading()
+                            Swal.showLoading();
                         }
                     });
                     document.getElementById('verifyForm-' + id).submit();

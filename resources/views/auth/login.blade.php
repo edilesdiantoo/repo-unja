@@ -105,6 +105,13 @@
                                 <i class="fas fa-sign-in-alt me-2"></i> LOGIN
                             </button>
 
+                            {{-- LINK REGISTRASI AKUN BARU --}}
+                            <div class="text-center mb-3">
+                                <span class="small text-muted">Belum punya akun?</span>
+                                <a href="{{ route('register') }}"
+                                    class="text-danger small fw-bold text-decoration-none">Daftar Sekarang</a>
+                            </div>
+
                             <div class="text-center">
                                 <a class="text-danger small text-decoration-none" href="/">Kembali ke halaman
                                     beranda</a>

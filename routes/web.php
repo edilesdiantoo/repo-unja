@@ -27,6 +27,9 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/register', [App\Http\Controllers\AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [App\Http\Controllers\AuthController::class, 'register']);
+
 // Route Group untuk Mahasiswa & Dosen (User)
 Route::prefix('user')->name('user.')->group(function () {
     // Nama route: user.dashboard
@@ -101,12 +104,25 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // ... route dashboard dan users ...
 
     // Menu Repositori
+    Route::get('/repository', [AdminArticle::class, 'index'])->name('repository.index');
+    Route::get('/repository/all', [AdminArticle::class, 'index'])->name('repository.all');
     Route::get('/repository/pending', [AdminArticle::class, 'pending'])->name('repository.pending');
-    Route::get('/repository/all', [AdminArticle::class, 'index'])->name('repository.index');
+    Route::get('/repository/show/{id}', [AdminArticle::class, 'show'])->name('repository.show');
+
+    // Verifikasi & Status
     Route::get('/repository/{id}/verify', [AdminArticle::class, 'verify'])->name('repository.verify');
     Route::patch('/repository/{id}/status', [AdminArticle::class, 'updateStatus'])->name('repository.update-status');
-    Route::get('/repository', [AdminArticle::class, 'index'])->name('repository.index');
-    Route::get('/repository/show/{id}', [AdminArticle::class, 'show'])->name('repository.show');
+
+    // Antrean Rilis Publikasi
+    Route::get('/repository/publikasi/{id}', [AdminArticle::class, 'detailPublikasi'])->name('repository.detailPublikasi');
+
+    // Edit & Update Data oleh Admin
+    Route::get('/repository/{id}/edit', [AdminArticle::class, 'edit'])->name('repository.edit');
+    Route::put('/repository/{id}', [AdminArticle::class, 'update'])->name('repository.update');
+
+    // Hapus Data
+    Route::delete('/repository/{id}', [AdminArticle::class, 'destroy'])->name('repository.destroy');
+
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
